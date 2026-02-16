@@ -1,15 +1,17 @@
 ﻿#include "StdAfx.h"
 #include "IconItemSkill.h"
 #include "GameDef.h"
+#include "N3UIIcon.h"
+#include "N3UIWndBase.h"
 
 __IconItemSkill::__IconItemSkill()
 {
+	pUIIcon     = nullptr;
 	pItemBasic  = nullptr;
 	pItemExt    = nullptr;
 	iCount      = 0;
 	iDurability = 0;
 	pSkill      = nullptr;
-	pUIIcon     = nullptr;
 }
 
 int __IconItemSkill::GetItemID() const
@@ -54,4 +56,50 @@ int __IconItemSkill::GetSellPrice(bool bHasPremium /*= false*/) const
 		iSellPrice = 1;
 
 	return iSellPrice;
+}
+
+bool __IconItemSkill::IsStackable() const
+{
+	if (pItemBasic == nullptr)
+		return false;
+
+	return pItemBasic->byContable == UIITEM_TYPE_COUNTABLE || pItemBasic->byContable == UIITEM_TYPE_COUNTABLE_SMALL;
+}
+
+void __IconItemSkill::CreateIcon(const std::string& szFN, CN3UIBase* pParent, uint32_t dwStyle, float fUVAspect)
+{
+	szIconFN = szFN;
+
+	delete pUIIcon;
+	pUIIcon = new CN3UIIcon();
+	pUIIcon->Init(pParent);
+
+	pUIIcon->SetTex(szFN);
+	pUIIcon->SetUVRect(0, 0, fUVAspect, fUVAspect);
+	pUIIcon->SetStyle(dwStyle);
+	pUIIcon->SetVisible(true);
+}
+
+__IconItemSkill* __IconItemSkill::Clone(CN3UIBase* pParent)
+{
+	__IconItemSkill* spItemNew = new __IconItemSkill();
+
+	spItemNew->szIconFN        = szIconFN;
+	spItemNew->pItemBasic      = pItemBasic;
+	spItemNew->pItemExt        = pItemExt;
+	spItemNew->pSkill          = pSkill;
+	spItemNew->iCount          = iCount;
+	spItemNew->iDurability     = iDurability;
+
+	if (pUIIcon != nullptr)
+	{
+		spItemNew->pUIIcon = new CN3UIIcon();
+		spItemNew->pUIIcon->Init(pParent);
+		spItemNew->pUIIcon->SetTex(szIconFN);
+		spItemNew->pUIIcon->SetUVRect(*pUIIcon->GetUVRect());
+		spItemNew->pUIIcon->SetStyle(pUIIcon->GetStyle());
+		spItemNew->pUIIcon->SetVisible(pUIIcon->IsVisible());
+	}
+
+	return spItemNew;
 }

@@ -12767,14 +12767,14 @@ void CUser::ItemUpgrade(char* pBuf)
 	uint8_t originPos    = -1;
 	bool upgradeSuccess  = false;
 
-	uint8_t reqItemPos[9] {};
-	int32_t reqItemId[9] {};
+	uint8_t reqItemPos[ANVIL_REQ_MAX] {};
+	int32_t reqItemId[ANVIL_REQ_MAX] {};
 
 	npcId        = GetShort(pBuf, index);
 	originItemId = GetDWORD(pBuf, index);
 	originPos    = GetByte(pBuf, index);
 
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < ANVIL_REQ_MAX; i++)
 	{
 		reqItemId[i]  = GetDWORD(pBuf, index);
 		reqItemPos[i] = GetByte(pBuf, index);
@@ -12783,7 +12783,7 @@ void CUser::ItemUpgrade(char* pBuf)
 	// Cannot upgrade while in the middle of trading.
 	if (m_sExchangeUser != -1)
 	{
-		SendItemUpgradeFailed(ITEM_UPGRADE_ERROR_TRADING);
+		SendItemUpgradeFailed(ITEM_UPGRADE_RESULT_TRADING);
 		return;
 	}
 
@@ -12839,7 +12839,7 @@ void CUser::ItemUpgrade(char* pBuf)
 	std::unordered_set<uint8_t> usedItemPositions;
 	usedItemPositions.insert(originPos);
 
-	for (int i = 0; i < ANVIL_MAX; i++)
+	for (int i = 0; i < ANVIL_REQ_MAX; i++)
 	{
 		// This implies the slot is unused, so we should ignore it.
 		if (reqItemPos[i] == 255)
@@ -12923,7 +12923,7 @@ void CUser::ItemUpgrade(char* pBuf)
 	// supports rental items.
 	if (originItem.byFlag != ITEM_FLAG_NONE)
 	{
-		SendItemUpgradeFailed(ITEM_UPGRADE_ERROR_ITEM_RENTED);
+		SendItemUpgradeFailed(ITEM_UPGRADE_RESULT_ITEM_RENTED);
 		return;
 	}
 
@@ -13032,12 +13032,12 @@ void CUser::ItemUpgrade(char* pBuf)
 		if ((itemUpgradeElementClass == 1 || itemUpgradeElementClass == 2)
 			&& itemClass != itemUpgradeElementClass)
 		{
-			SendItemUpgradeFailed(ITEM_UPGRADE_ERROR_NO_MATCH);
+			SendItemUpgradeFailed(ITEM_UPGRADE_RESULT_NO_MATCH);
 			return;
 		}
 
 		bool matchedRequiredItems = true;
-		for (int j = 0; j < 8; j++)
+		for (int j = 0; j < ANVIL_REQ_MAX - 1; j++)
 		{
 			if (itemUpgradeModel->RequiredItem[j] == 0)
 				break;
@@ -13055,7 +13055,7 @@ void CUser::ItemUpgrade(char* pBuf)
 
 		if (itemUpgradeModel->RequiredCoins > m_pUserData->m_iGold)
 		{
-			SendItemUpgradeFailed(ITEM_UPGRADE_ERROR_NEED_COINS);
+			SendItemUpgradeFailed(ITEM_UPGRADE_RESULT_NEED_COINS);
 			return;
 		}
 
@@ -13065,7 +13065,7 @@ void CUser::ItemUpgrade(char* pBuf)
 
 	if (matchedItemUpgradeModel == nullptr)
 	{
-		SendItemUpgradeFailed(ITEM_UPGRADE_ERROR_NO_MATCH);
+		SendItemUpgradeFailed(ITEM_UPGRADE_RESULT_NO_MATCH);
 		return;
 	}
 
@@ -13114,7 +13114,7 @@ void CUser::ItemUpgrade(char* pBuf)
 		originItem.sTimeRemaining = 0;
 	}
 
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < ANVIL_REQ_MAX; i++)
 	{
 		if (reqItemPos[i] >= HAVE_MAX)
 			continue;
@@ -13144,18 +13144,18 @@ void CUser::ItemUpgrade(char* pBuf)
 
 	if (upgradeSuccess)
 	{
-		SetByte(sendBuffer, ITEM_UPGRADE_ERROR_SUCCEEDED, sendIndex);
+		SetByte(sendBuffer, ITEM_UPGRADE_RESULT_SUCCEEDED, sendIndex);
 		SetDWORD(sendBuffer, newItemId, sendIndex);
 	}
 	else
 	{
-		SetByte(sendBuffer, ITEM_UPGRADE_ERROR_FAILED, sendIndex);
+		SetByte(sendBuffer, ITEM_UPGRADE_RESULT_FAILED, sendIndex);
 		SetDWORD(sendBuffer, originItemId, sendIndex);
 	}
 
 	SetByte(sendBuffer, originPos, sendIndex);
 
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < ANVIL_REQ_MAX; i++)
 	{
 		SetDWORD(sendBuffer, reqItemId[i], sendIndex);
 		SetByte(sendBuffer, reqItemPos[i], sendIndex);

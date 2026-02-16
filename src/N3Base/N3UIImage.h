@@ -57,6 +57,7 @@ public:
 
 	void SetTex(const std::string& szFN);                             // Texture 지정
 	void SetUVRect(float left, float top, float right, float bottom); // image의 uv좌표 지정
+	void SetUVRect(const __FLOAT_RECT& frc);                          // image의 uv좌표 지정
 	void SetColor(D3DCOLOR color);                                    // 칼라 지정
 
 	void SetRegion(const RECT& Rect) override;                        // 영역 지정

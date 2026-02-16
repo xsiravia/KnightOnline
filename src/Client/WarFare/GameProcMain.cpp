@@ -52,6 +52,7 @@
 #include "UIQuestTalk.h"
 #include "UIDead.h"
 #include "UIUpgradeSelect.h"
+#include "UIItemUpgrade.h"
 #include "UILevelGuide.h"
 #include "UIMsgBoxOkCancel.h"
 
@@ -139,6 +140,7 @@ CGameProcMain::CGameProcMain()     // r기본 생성자.. 각 변수의 역활�
 	m_pUIQuestTalk          = new CUIQuestTalk();
 	m_pUIDead               = new CUIDead();
 	m_pUIUpgradeSelect      = new CUIUpgradeSelect();
+	m_pUIItemUpgrade        = new CUIItemUpgrade();
 	m_pUILevelGuide         = new CUILevelGuide();
 
 	m_pSubProcPerTrade      = new CSubProcPerTrade();
@@ -189,6 +191,7 @@ CGameProcMain::~CGameProcMain()
 	delete m_pUIQuestTalk;
 	delete m_pUIDead;
 	delete m_pUIUpgradeSelect;
+	delete m_pUIItemUpgrade;
 	delete m_pUILevelGuide;
 
 	delete m_pSubProcPerTrade;
@@ -242,6 +245,7 @@ void CGameProcMain::ReleaseUIs()
 	m_pUIInn->Release();
 	m_pUICreateClanName->Release();
 	m_pUIUpgradeSelect->Release();
+	m_pUIItemUpgrade->Release();
 	m_pUILevelGuide->Release();
 
 	CN3UIBase::DestroyTooltip();
@@ -4221,6 +4225,14 @@ void CGameProcMain::InitUI()
 	m_pUIUpgradeSelect->SetState(UI_STATE_COMMON_NONE);
 	m_pUIUpgradeSelect->SetStyle(m_pUIUpgradeSelect->GetStyle() | UISTYLE_USER_MOVE_HIDE | UISTYLE_SHOW_ME_ALONE);
 
+	m_pUIItemUpgrade->Init(s_pUIMgr);
+	m_pUIItemUpgrade->LoadFromFile(pTbl->szItemUpgrade);
+	m_pUIItemUpgrade->SetVisibleWithNoSound(false);
+	rc = m_pUIItemUpgrade->GetRegion();
+	m_pUIItemUpgrade->SetPos(iW - (rc.right - rc.left), 10);
+	m_pUIItemUpgrade->SetState(UI_STATE_COMMON_NONE);
+	m_pUIItemUpgrade->SetStyle(UISTYLE_USER_MOVE_HIDE | UISTYLE_SHOW_ME_ALONE);
+
 	//ui level guide
 	m_pUILevelGuide->Init(s_pUIMgr);
 	m_pUILevelGuide->LoadFromFile(pTbl->szLvlGuide);
@@ -5775,6 +5787,15 @@ void CGameProcMain::MsgRecv_ObjectEvent(Packet& pkt)
 			if (iResult == 0)
 				szMsg = fmt::format_text_resource(IDS_WARP_WRONG_GATE);
 			MsgOutput(szMsg, 0xff00ff00);
+		}
+		break;
+
+		case OBJECT_TYPE_ANVIL:
+		{
+			/*
+			if (iResult == 0) // anvil object failed animation	
+			if (iResult == 1) // anvil object succeeded animation
+			*/
 		}
 		break;
 
@@ -8001,14 +8022,12 @@ void CGameProcMain::MsgRecv_ItemUpgrade(Packet& pkt)
 			}
 			break;
 
-		// NOLINTNEXTLINE(bugprone-branch-clone)
 		case ITEM_UPGRADE_PROCESS:
-#if 0 // TODO
 			if (m_pUIItemUpgrade != nullptr)
 				m_pUIItemUpgrade->MsgRecv_ItemUpgrade(pkt);
-#endif
 			break;
 
+		// NOLINTNEXTLINE(bugprone-branch-clone)
 		case ITEM_UPGRADE_ACCESSORIES:
 #if 0 // TODO
 			if (m_pUIRingUpgrade != nullptr)
